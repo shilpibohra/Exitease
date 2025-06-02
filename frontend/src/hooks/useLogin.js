@@ -39,7 +39,7 @@ export const useLogin = () => {
       enqueueSnackbar(`Login successful`, {
         variant: "success",
       });
-      navigate("/");
+      navigate("/admin");
     } catch (error) {
       enqueueSnackbar(`Login failed: ${error?.message}`, {
         variant: "error",
