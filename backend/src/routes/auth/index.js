@@ -1,9 +1,9 @@
-/*import express from "express";
+import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User, Role, UserRole } from "../../models/index.js";
 import verifyToken from "../../../middleware/authenticate.js";
-//import fetchRoleAndPermissions from "../../../helpers/fetchRolesAndPermissions.js";
+import fetchRoleAndPermissions from "../../../helpers/fetchRolesAndPermissions.js";
 const router = express.Router();
 
 router.get("/", verifyToken, async (req, res) => {
@@ -39,6 +39,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Authentication failed" });
     }
     const passwordMatch = await bcrypt.compare(password, user.password);
+    console.log("Password Match:", passwordMatch);
     if (!passwordMatch) {
       return res.status(401).json({ error: "Authentication failed" });
     }
@@ -60,8 +61,8 @@ router.post("/login", async (req, res) => {
   }
 });
 
-export default router;*/
-import express from "express";
+export default router;
+/*import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User, Role, UserRole } from "../../models/index.js";
@@ -143,4 +144,4 @@ router.post("/login", async (req, res) => {
   }
 });
 
-export default router;
+export default router;*/

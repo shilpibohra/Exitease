@@ -1,4 +1,4 @@
-/*import express from "express";
+import express from "express";
 import {
   canGetAllResignation,
   canGetAllResponses,
@@ -62,8 +62,8 @@ router.get("/exit_responses", verifyToken, canGetAllResponses, async (req, res) 
   }
 });
 
-export default router;*/
-import express from "express";
+export default router;
+/*import express from "express";
 import {
   canGetAllResignation,
   canGetAllResponses,
@@ -134,4 +134,4 @@ router.get("/exit_responses", verifyToken, canGetAllResponses, async (req, res) 
   }
 });
 
-export default router;
+export default router;*/

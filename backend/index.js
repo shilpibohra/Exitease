@@ -3,12 +3,14 @@ import express from "express";
 //const express = require('express');
 import cors from "cors";
 import dbConnection from "./helpers/dbconnect.js";
+import seedHRAccount from "./helpers/seedHRAccount.js";
 
 import { authRoutes, userRoutes, adminRoutes } from "./src/routes/index.js";
 import authenticate from "./middleware/authenticate.js";
 
 try {
   await dbConnection;
+  await seedHRAccount();
   const app = express();
   const port = process.env.PORT ?? 8080      ;
 

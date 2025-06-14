@@ -1,4 +1,4 @@
-import axios from "axios";
+/*import axios from "axios";
 
 let holidaysMap = {
   US: {},
@@ -48,4 +48,53 @@ export default async (req, res, next) => {
       error: "Error while checking calendar",
     });
   }
+};*/
+import axios from "axios";
+
+const holidaysMap = {};
+
+const checkCalendar = async (req, res, next) => {
+  let { country = "US", lwd } = req.body;
+
+  // Validate lwd format
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(lwd)) {
+    return res.status(400).json({ error: "Invalid date format. Use YYYY-MM-DD." });
+  }
+
+  const year = lwd.split("-")[0];
+
+  if (!holidaysMap[country]) holidaysMap[country] = {};
+  if (!holidaysMap[country][year]) {
+    try {
+      // Fetch holidays from Calendarific
+      const {
+        data: {
+          response: { holidays },
+        },
+      } = await axios.get(
+        `https://calendarific.com/api/v2/holidays?api_key=${process.env.CALENDARIFIC_API_KEY}&country=${country}&year=${year}`
+      );
+
+      // Process and cache holidays
+      const holidayDates = holidays
+        .filter(({ type }) => type.includes("National holiday"))
+        .map(({ date }) => date.iso);
+
+      holidaysMap[country][year] = holidayDates;
+    } catch (error) {
+      console.error("Error fetching holidays:", error.message);
+      return res.status(500).json({
+        error: "Problem fetching holidays. Please try again later.",
+      });
+    }
+  }
+
+  // Check if lwd is a holiday
+  if (holidaysMap[country][year]?.includes(lwd)) {
+    return res.status(400).json({ error: "lwd is on a holiday" });
+  }
+
+  next();
 };
+
+export default checkCalendar;

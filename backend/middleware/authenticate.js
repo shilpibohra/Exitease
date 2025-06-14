@@ -16,19 +16,20 @@ export default function (req, res, next) {
 }*/
 import jwt from "jsonwebtoken";
 
-export default function verifyToken(req, res, next) {
-  const authHeader = req.headers["authorization"]; // lowercase 'authorization'
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Access denied. No token provided." });
-  }
+export default function (req, res, next) {
+  const authHeader = req.get("Authorization");  // safer to use .get() here
+  if (!authHeader) return res.status(401).json({ error: "Access denied. Token missing." });
 
-  const token = authHeader.split(" ")[1]; // Get token after 'Bearer'
+  // Extract token from "Bearer <token>" or just "<token>"
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { _id: decoded.userId };
+    req.user = {
+      _id: decoded.userId,  // make sure your token payload uses 'userId'
+    };
     next();
   } catch (error) {
-    console.error("JWT verification failed:", error);
     res.status(401).json({ error: "Invalid token" });
   }
 }
