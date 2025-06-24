@@ -1,4 +1,4 @@
-import {
+/*import {
     UserRole,
     Permission,
     RolePermission,
@@ -39,7 +39,7 @@ import {
       roles,
       permissions,
     };
-  }
+  }*/
     /*import { UserRole, Permission, RolePermission, Role } from "../src/models/index.js";
 
 export default async function fetchRolesAndPermissions(req) {
@@ -78,3 +78,56 @@ export default async function fetchRolesAndPermissions(req) {
     throw new Error("Failed to fetch roles and permissions");
   }
 }*/
+import {
+  UserRole,
+  Permission,
+  RolePermission,
+  Role,
+} from "../src/models/index.js";
+
+export default async function fetchRoleAndPermissions(req) {
+  console.log("Fetching roles and permissions for user:", req.user._id); // Log the user ID
+  
+  // Fetch user roles
+  const userRoles = await UserRole.find({
+    userId: req.user._id,
+  });
+  console.log("User Roles fetched:", userRoles); // Log the fetched user roles
+
+  let roles = {};
+  const fetchedRoles = await Role.find({
+    _id: { $in: userRoles.map(({ roleId }) => roleId) },
+  });
+  console.log("Roles fetched from database:", fetchedRoles); // Log the fetched roles
+  
+  fetchedRoles.forEach(({ role }) => {
+    roles[role] = true;
+  });
+  console.log("Processed roles:", roles); // Log the processed roles object
+
+  let permissions = {};
+  if (userRoles.length) {
+    const rolePermissions = await RolePermission.find({
+      roleId: { $in: userRoles.map(({ roleId }) => roleId) },
+    });
+    console.log("Role Permissions fetched:", rolePermissions); // Log the fetched role permissions
+
+    if (rolePermissions.length) {
+      const fetchedPermissions = await Permission.find({
+        _id: { $in: rolePermissions.map(({ permissionId }) => permissionId) },
+      });
+      console.log("Permissions fetched from database:", fetchedPermissions); // Log the fetched permissions
+
+      fetchedPermissions.forEach(({ action, subject }) => {
+        if (!permissions[subject]) permissions[subject] = {};
+        permissions[subject][action] = true;
+      });
+    }
+  }
+  console.log("Processed permissions:", permissions); // Log the processed permissions object
+
+  return {
+    roles,
+    permissions,
+  };
+}

@@ -35,44 +35,48 @@ async function seedHRAccount() {
 
 export default seedHRAccount;*/
 import bcrypt from "bcrypt";
-import { User, Role, UserRole } from "../src/models/index.js";
+import { User, Role, UserRole, Permission, RolePermission } from "../src/models/index.js";
 
-async function seedHRAccount() {
-  try {
-    // Ensure the HR role exists in the Role collection
-    const hrRole = await Role.findOneAndUpdate(
-      { role: "HR" }, // Query for HR role
-      { role: "HR" }, // If not found, create a new role
-      { upsert: true, new: true }
-    );
-
-    // Check if the admin user already exists
-    const existingUser = await User.findOne({ username: "admin" });
-
-    if (!existingUser) {
-      // Hash the default password or use the one from .env
-      const hashedPassword = await bcrypt.hash(process.env.HR_PASSWORD || "admin", 10);
-
-      // Create the admin user
-      const newUser = await User.create({
-        username: "admin",
-        password: hashedPassword,
-      });
-
-      // Link the user with the HR role
-      await UserRole.create({
-        userId: newUser._id,
-        roleId: hrRole._id,
-      });
-
-      console.log("HR account created with username: admin and password: admin");
-    } else {
-      console.log("HR account already exists");
+const seedHRAccount = async () => {
+    try {
+      const adminRole = await Role.findOneAndUpdate(
+        { role: "admin" },
+        { role: "admin", description: "Administrator role" },
+        { upsert: true, new: true }
+      );
+  
+      const hashedPassword = await bcrypt.hash("admin", 10);
+  
+      const adminUser = await User.findOneAndUpdate(
+        { username: "admin" },
+        { username: "admin", password: hashedPassword },
+        { upsert: true, new: true }
+      );
+  
+      await UserRole.findOneAndUpdate(
+        { userId: adminUser._id, roleId: adminRole._id },
+        { userId: adminUser._id, roleId: adminRole._id },
+        { upsert: true }
+      );
+      
+      const seeAllPermission = await Permission.findOneAndUpdate(
+        { subject: "resignation", action: "see_all" },
+        { subject: "resignation", action: "see_all", description: "Permission to see all resignations" },
+        { upsert: true, new: true }
+      );
+  
+      // Associate the permission with the HR role
+      await RolePermission.findOneAndUpdate(
+        { roleId: adminRole._id, permissionId: seeAllPermission._id },
+  { roleId: adminRole._id, permissionId: seeAllPermission._id },
+  { upsert: true }
+);
+      console.log("HR account seeded successfully.");
+    } catch (error) {
+      console.error("Error seeding HR account:", error);
     }
-  } catch (error) {
-    console.error("Error creating HR account:", error);
-  }
-}
-
-export default seedHRAccount;
+  };
+  
+  export default seedHRAccount;
+  
 
